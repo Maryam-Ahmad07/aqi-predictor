@@ -1,0 +1,36 @@
+name: Feature Pipeline (hourly)
+
+on:
+  schedule:
+    - cron: "5 * * * *"   # 5 minutes past every hour
+  workflow_dispatch: {}
+
+jobs:
+  run-feature-pipeline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run feature pipeline
+        env:
+          AQI_CITY_NAME: ${{ vars.AQI_CITY_NAME }}
+          AQI_LAT: ${{ vars.AQI_LAT }}
+          AQI_LON: ${{ vars.AQI_LON }}
+        run: python feature_pipeline.py
+
+      - name: Commit updated feature store
+        run: |
+          git config user.name "aqi-bot"
+          git config user.email "aqi-bot@users.noreply.github.com"
+          git add feature_store/aqi_features.parquet
+          git diff --cached --quiet || git commit -m "Automated feature update [skip ci]"
+          git push

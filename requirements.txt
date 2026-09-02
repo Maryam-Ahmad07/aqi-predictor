@@ -1,0 +1,11 @@
+requests
+pandas
+numpy
+scikit-learn
+joblib
+shap
+matplotlib
+streamlit
+plotly
+pyarrow
+python-dateutil
